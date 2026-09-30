@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-30T08:18:35.891Z",
+  "generatedAt": "2026-09-30T08:22:23.313Z",
   "monitor": {
     "startedAt": "2026-09-30T08:11:27.183Z",
     "intervalSeconds": 900,
@@ -9,26 +9,26 @@
   "components": [
     {
       "id": "website",
-      "status": "operational",
-      "latencyMs": 88,
-      "reason": null,
-      "checkedAt": "2026-09-30T08:18:35.891Z",
+      "status": "unknown",
+      "latencyMs": 302,
+      "reason": "The monitor was blocked or rate limited; availability could not be verified.",
+      "checkedAt": "2026-09-30T08:22:23.313Z",
       "name": "Website"
     },
     {
       "id": "api",
-      "status": "operational",
-      "latencyMs": 84,
-      "reason": null,
-      "checkedAt": "2026-09-30T08:18:35.891Z",
+      "status": "unknown",
+      "latencyMs": 140,
+      "reason": "The monitor was blocked or rate limited; availability could not be verified.",
+      "checkedAt": "2026-09-30T08:22:23.313Z",
       "name": "Public API"
     },
     {
       "id": "database",
       "status": "operational",
-      "latencyMs": 50,
+      "latencyMs": 5,
       "reason": null,
-      "checkedAt": "2026-09-30T08:18:35.845Z",
+      "checkedAt": "2026-09-30T08:22:23.126Z",
       "name": "Database"
     },
     {
@@ -36,7 +36,7 @@
       "status": "operational",
       "latencyMs": 76,
       "reason": null,
-      "checkedAt": "2026-09-30T08:18:35.871Z",
+      "checkedAt": "2026-09-30T08:22:23.197Z",
       "name": "Cache"
     }
   ],
@@ -98,6 +98,35 @@
           "reason": null
         }
       ]
+    },
+    {
+      "checkedAt": "2026-09-30T08:22:23.313Z",
+      "components": [
+        {
+          "id": "website",
+          "status": "unknown",
+          "latencyMs": 302,
+          "reason": "The monitor was blocked or rate limited; availability could not be verified."
+        },
+        {
+          "id": "api",
+          "status": "unknown",
+          "latencyMs": 140,
+          "reason": "The monitor was blocked or rate limited; availability could not be verified."
+        },
+        {
+          "id": "database",
+          "status": "operational",
+          "latencyMs": 5,
+          "reason": null
+        },
+        {
+          "id": "cache",
+          "status": "operational",
+          "latencyMs": 76,
+          "reason": null
+        }
+      ]
     }
   ],
   "days": [
@@ -106,33 +135,33 @@
       "components": [
         {
           "id": "website",
-          "status": "operational",
-          "checks": 2,
+          "status": "unknown",
+          "checks": 3,
           "passed": 2,
           "failed": 0,
-          "unknown": 0
+          "unknown": 1
         },
         {
           "id": "api",
-          "status": "operational",
-          "checks": 2,
+          "status": "unknown",
+          "checks": 3,
           "passed": 2,
           "failed": 0,
-          "unknown": 0
+          "unknown": 1
         },
         {
           "id": "database",
           "status": "unknown",
-          "checks": 2,
-          "passed": 1,
+          "checks": 3,
+          "passed": 2,
           "failed": 0,
           "unknown": 1
         },
         {
           "id": "cache",
           "status": "unknown",
-          "checks": 2,
-          "passed": 1,
+          "checks": 3,
+          "passed": 2,
           "failed": 0,
           "unknown": 1
         }
