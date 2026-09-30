@@ -472,14 +472,15 @@ test('primary and fallback builds enforce scoped CSP and publish only their inte
     await runBuild();
     const primary = await readFile(join(fixtureRoot, 'dist/index.html'), 'utf8');
     assert.match(primary, /http-equiv="Content-Security-Policy"/);
-    assert.match(primary, /default-src 'none'; style-src 'self'; script-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'; img-src 'none'/);
+    const scheduledUrl = 'https://yomumi-status-monitor.yomumi.workers.dev/status.json';
+    assert.ok(primary.includes(`default-src 'none'; style-src 'self'; script-src 'self'; connect-src 'self' ${scheduledUrl}; base-uri 'none'; form-action 'none'; object-src 'none'; img-src 'none'`));
     assert.match(primary, /name="status-data-url" content="\.\/status\.json"/);
     assert.equal(await readFile(join(fixtureRoot, 'dist/CNAME'), 'utf8'), 'status.yomumi.moe\n');
     assert.ok(validateSnapshot(JSON.parse(await readFile(join(fixtureRoot, 'dist/status.json'), 'utf8'))));
     const fallbackUrl = 'https://raw.githubusercontent.com/Lumichandesu/yomumi-status/main/public/status.json';
     await runBuild(fallbackUrl);
     const fallback = await readFile(join(fixtureRoot, 'dist/index.html'), 'utf8');
-    assert.ok(fallback.includes(`connect-src 'self' ${fallbackUrl};`));
+    assert.ok(fallback.includes(`connect-src 'self' ${scheduledUrl} ${fallbackUrl};`));
     assert.ok(fallback.includes(`name="status-data-url" content="${fallbackUrl}"`));
     await assert.rejects(readFile(join(fixtureRoot, 'dist/CNAME')), { code: 'ENOENT' });
     await assert.rejects(readFile(join(fixtureRoot, 'dist/status.json')), { code: 'ENOENT' });
