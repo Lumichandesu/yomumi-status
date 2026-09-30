@@ -21,7 +21,7 @@ function serviceProbeObservations(result, now) {
   if (report?.schemaVersion !== 1 || report.probe !== 'worker_service_binding' || !reportTime || !fresh(reportTime) || !Array.isArray(report.systems) || report.systems.length !== 2 || new Set(report.systems.map((item) => item?.id)).size !== 2 || !report.systems.every((item) => ['website', 'api'].includes(item?.id))) return null;
   return report.systems.filter((item) => {
     const checkedAt = normalizeTimestamp(item.checkedAt);
-    return item.probe === 'worker_service_binding' && checkedAt && fresh(checkedAt) && Number.isFinite(item.latencyMs) && item.latencyMs >= 0 && item.latencyMs <= 120000 && (item.status === 'operational' && item.reasonCode === 'service_binding_passed' || item.status === 'outage' && ['service_unavailable', 'probe_failed', 'probe_timed_out'].includes(item.reasonCode));
+    return item.probe === 'worker_service_binding' && checkedAt && fresh(checkedAt) && Number.isFinite(item.latencyMs) && item.latencyMs >= 0 && item.latencyMs <= 120000 && (item.status === 'operational' && ['service_binding_passed', 'probe_succeeded'].includes(item.reasonCode) || item.status === 'outage' && ['service_unavailable', 'probe_failed', 'probe_timed_out'].includes(item.reasonCode));
   }).map((item) => ({ id: item.id, status: item.status, checkedAt: normalizeTimestamp(item.checkedAt), latencyMs: item.latencyMs }));
 }
 async function limitedText(response, limit, signal) {
