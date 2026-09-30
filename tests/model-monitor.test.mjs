@@ -12,6 +12,9 @@ import { requestObservation, runChecks, recordObservation } from '../scripts/mon
 const NOW = Date.parse('2026-09-30T12:00:00.000Z');
 const DAY = 86400000;
 const API_BASE = 'https://yomumi-api-fixture.asia-southeast1.run.app/';
+const SERVICE_PROBE_URL = 'https://yomumi-status-probe.fixture-account.workers.dev/probe';
+const SERVICE_PROBE_TOKEN = 'a'.repeat(64);
+const serviceConfiguration = { serviceProbeUrl: SERVICE_PROBE_URL, serviceProbeToken: SERVICE_PROBE_TOKEN };
 const ids = Object.keys(COMPONENTS);
 const stamp = (time) => new Date(time).toISOString();
 const clone = (value) => structuredClone(value);
@@ -29,13 +32,18 @@ function measuredReport(time = NOW) {
     ],
   };
 }
-function fixtureFetch({ website = () => html(), api = () => json({ status: 'healthy', service: 'yomumi-api' }), dependencies = () => json(measuredReport()) } = {}) {
+function bindingReport(time = NOW) {
+  return { schemaVersion: 1, probe: 'worker_service_binding', checkedAt: stamp(time), systems: ['website', 'api'].map((id) => ({ id, probe: 'worker_service_binding', status: 'operational', checkedAt: stamp(time), latencyMs: id === 'website' ? 13 : 8, reasonCode: 'service_binding_passed' })) };
+}
+function fixtureFetch({ website = () => html(), api = () => json({ status: 'healthy', service: 'yomumi-api' }), dependencies = () => json(measuredReport()), serviceProbe } = {}) {
   const calls = [];
   const fetchImpl = async (url, options) => {
     const target = new URL(url);
     calls.push({ url: target.href, options });
     assert.equal(options.redirect, 'manual');
     assert.equal(options.headers['User-Agent'], 'YomumiStatusProbe/1.0');
+    if (target.href === SERVICE_PROBE_URL && serviceProbe) return serviceProbe(options);
+    assert.equal(options.headers.Authorization, undefined, 'the private probe token must never be sent to public or database targets');
     if (target.hostname === 'yomumi.moe' && target.pathname === '/') return website();
     if (target.hostname === 'yomumi.moe' && target.pathname === '/healthz') return api();
     if (target.hostname === 'yomumi-api-fixture.asia-southeast1.run.app' && target.pathname === '/api/status') return dependencies();
@@ -190,6 +198,141 @@ test('invalid private target configuration fails generically before any network 
     await assert.rejects(runChecks({ apiBase, fetchImpl: () => { called = true; throw new Error('unexpected'); } }), { message: 'Invalid monitor target configuration' });
   }
   assert.equal(called, false);
+});
+
+test('only blocked external requests may use authenticated service-binding measurements with explicit scope', async () => {
+  const fixture = fixtureFetch({ website: () => html('blocked', 403), api: () => json({}, 429), serviceProbe: () => json(bindingReport(NOW - 10000)) });
+  const observation = await check(fixture, serviceConfiguration);
+  assert.equal(fixture.calls.length, 4);
+  const authenticated = fixture.calls.find((call) => call.url === SERVICE_PROBE_URL);
+  assert.equal(authenticated.options.headers.Authorization, `Bearer ${SERVICE_PROBE_TOKEN}`);
+  assert.equal(authenticated.options.redirect, 'manual');
+  assert.equal(authenticated.options.headers['User-Agent'], 'YomumiStatusProbe/1.0');
+  for (const id of ['website', 'api']) {
+    const component = row(observation, id);
+    assert.equal(component.status, 'operational');
+    assert.equal(component.checkedAt, stamp(NOW - 10000));
+    assert.equal(component.reason, 'Service check passed; public access could not be tested by the external monitor.');
+  }
+  assert.equal(row(observation, 'website').latencyMs, 13);
+  assert.equal(row(observation, 'api').latencyMs, 8);
+  assert.equal(row(observation, 'database').status, 'operational');
+  assert.equal(row(observation, 'cache').status, 'operational');
+  const snapshot = recordObservation(null, observation);
+  assert.equal(buildView(snapshot, NOW).overall, 'operational');
+  assert.ok(!JSON.stringify(snapshot).includes(SERVICE_PROBE_TOKEN));
+  assert.ok(!JSON.stringify(snapshot).includes(SERVICE_PROBE_URL));
+});
+
+test('service binding never overrides a real public outage or unverified HTTP 200 content', async () => {
+  for (const scenario of [
+    { website: () => html('unavailable', 503), api: () => json({}, 403), retained: 'website', expected: 'outage' },
+    { website: () => html('<title>wrong content</title>'), api: () => json({}, 403), retained: 'website', expected: 'unknown' },
+    { website: () => html('blocked', 403), api: () => json({}, 503), retained: 'api', expected: 'outage' },
+  ]) {
+    const observation = await check(fixtureFetch({ ...scenario, serviceProbe: () => json(bindingReport()) }), serviceConfiguration);
+    assert.equal(row(observation, scenario.retained).status, scenario.expected);
+    assert.notEqual(row(observation, scenario.retained).reason, 'Service check passed; public access could not be tested by the external monitor.');
+    assert.equal(row(observation, scenario.retained === 'website' ? 'api' : 'website').status, 'operational');
+    if (scenario.expected === 'outage') assert.equal(recordObservation(null, observation).incidents.length, 1);
+  }
+  const healthy = fixtureFetch({ serviceProbe: () => { throw new Error('Service binding must not be queried'); } });
+  await check(healthy, serviceConfiguration);
+  assert.equal(healthy.calls.length, 3);
+});
+
+test('a real external timeout is retained even when the other blocked component has a passing service binding', { timeout: 1500 }, async () => {
+  const fixture = fixtureFetch({ website: () => new Promise(() => {}), api: () => json({}, 403), serviceProbe: () => json(bindingReport()) });
+  const observation = await check(fixture, { ...serviceConfiguration, timeoutMs: 10 });
+  assert.equal(row(observation, 'website').status, 'outage');
+  assert.equal(row(observation, 'website').reason, 'The monitor request timed out.');
+  assert.equal(row(observation, 'api').status, 'operational');
+});
+
+test('binding report schema, markers, duplicate IDs, timestamps, and per-row success evidence are mandatory', async () => {
+  const mutations = [
+    (report) => { report.schemaVersion = 2; },
+    (report) => { delete report.probe; },
+    (report) => { report.systems[1].id = 'website'; },
+    (report) => { report.systems.push(clone(report.systems[0])); },
+    (report) => { report.checkedAt = stamp(NOW - 120001); },
+    (report) => { report.checkedAt = stamp(NOW + 60001); },
+    (report) => { report.systems[0].checkedAt = stamp(NOW - 120001); },
+    (report) => { report.systems[0].checkedAt = '2026-09-30 12:00:00'; },
+    (report) => { delete report.systems[0].probe; },
+    (report) => { report.systems[0].reasonCode = 'pretend_success'; },
+    (report) => { report.systems[0].latencyMs = -1; },
+    (report) => { report.systems[0].status = 'unknown'; },
+  ];
+  for (const mutate of mutations) {
+    const report = bindingReport();
+    mutate(report);
+    const fixture = fixtureFetch({ website: () => html('blocked', 403), api: () => json({}, 403), serviceProbe: () => json(report) });
+    const observation = await check(fixture, serviceConfiguration);
+    assert.equal(row(observation, 'website').status, 'unknown');
+    assert.notEqual(buildView(recordObservation(null, observation), NOW).overall, 'operational');
+  }
+});
+
+test('a measured binding failure may declare an outage but unknown cannot resolve an existing incident', async () => {
+  const report = bindingReport();
+  Object.assign(report.systems[0], { status: 'outage', reasonCode: 'service_unavailable' });
+  const setup = (serviceProbe) => fixtureFetch({ website: () => html('blocked', 403), api: () => json({}, 403), serviceProbe });
+  const failure = await check(setup(() => json(report)), serviceConfiguration);
+  assert.equal(row(failure, 'website').status, 'outage');
+  assert.equal(row(failure, 'website').reason, 'Service check failed; public access could not be tested by the external monitor.');
+  let snapshot = recordObservation(null, failure);
+  assert.equal(snapshot.incidents.length, 1);
+  const unknownReport = bindingReport(NOW + 1000);
+  Object.assign(unknownReport.systems[0], { status: 'unknown', reasonCode: 'response_invalid' });
+  const unknown = await check(setup(() => json(unknownReport)), { ...serviceConfiguration, now: () => NOW + 1000 });
+  snapshot = recordObservation(snapshot, unknown);
+  assert.equal(snapshot.incidents[0].resolvedAt, null);
+});
+
+test('invalid optional binding configuration fails generically before network and never leaks supplied secrets', async () => {
+  let called = false;
+  const cases = [
+    { serviceProbeUrl: SERVICE_PROBE_URL },
+    { serviceProbeToken: SERVICE_PROBE_TOKEN },
+    { ...serviceConfiguration, serviceProbeToken: 'fixture-password' },
+    { ...serviceConfiguration, serviceProbeToken: SERVICE_PROBE_TOKEN + 'a' },
+    { ...serviceConfiguration, serviceProbeUrl: SERVICE_PROBE_URL.replace('https:', 'http:') },
+    { ...serviceConfiguration, serviceProbeUrl: 'https://private.invalid/probe' },
+    { ...serviceConfiguration, serviceProbeUrl: SERVICE_PROBE_URL.replace('yomumi-status-probe.', 'another-worker.') },
+    { ...serviceConfiguration, serviceProbeUrl: SERVICE_PROBE_URL + '?token=fixture-password' },
+    { ...serviceConfiguration, serviceProbeUrl: SERVICE_PROBE_URL + '#fixture-password' },
+    { ...serviceConfiguration, serviceProbeUrl: SERVICE_PROBE_URL.replace('/probe', '/arbitrary') },
+    { ...serviceConfiguration, serviceProbeUrl: SERVICE_PROBE_URL.replace('https://', 'https://fixture-user:fixture-password@') },
+    { ...serviceConfiguration, serviceProbeUrl: SERVICE_PROBE_URL.replace('/probe', ':8443/probe') },
+  ];
+  for (const configuration of cases) await assert.rejects(runChecks({ apiBase: API_BASE, fetchImpl: () => { called = true; }, ...configuration }), { message: 'Invalid service probe configuration' });
+  assert.equal(called, false);
+  const disabled = fixtureFetch({ website: () => html('blocked', 403), api: () => json({}, 403) });
+  const observation = await check(disabled);
+  assert.equal(disabled.calls.length, 3);
+  assert.equal(row(observation, 'website').status, 'unknown');
+});
+
+test('unauthorized, redirected, malformed, oversized, and hanging authenticated responses remain unknown', { timeout: 1500 }, async () => {
+  const cases = [
+    () => json({}, 401),
+    () => json({}, 403),
+    () => json({}, 302),
+    () => new Response('{broken', { headers: { 'Content-Type': 'application/json' } }),
+    () => new Response(JSON.stringify(bindingReport()), { headers: { 'Content-Type': 'text/plain' } }),
+    () => json({ ...bindingReport(), privatePayload: 'z'.repeat(16384) }),
+    () => new Promise(() => {}),
+    () => new Response(new ReadableStream({ cancel() { return new Promise(() => {}); } })),
+  ];
+  for (const serviceProbe of cases) {
+    const fixture = fixtureFetch({ website: () => html('blocked', 403), api: () => json({}, 403), serviceProbe });
+    const observation = await check(fixture, { ...serviceConfiguration, timeoutMs: 10 });
+    assert.equal(row(observation, 'website').status, 'unknown');
+    assert.equal(row(observation, 'api').status, 'unknown');
+    assert.equal(fixture.calls.filter((call) => call.url === SERVICE_PROBE_URL).length, 1);
+    assert.ok(!JSON.stringify(observation).includes(SERVICE_PROBE_TOKEN));
+  }
 });
 
 test('initial history has only observed checks and 90-day missing dates stay unknown', () => {

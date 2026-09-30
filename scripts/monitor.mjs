@@ -6,7 +6,7 @@ const apiBase = process.env.STATUS_API_BASE_URL;
 if (!apiBase) throw new Error('STATUS_API_BASE_URL must be configured for the independent monitor');
 let previous = null;
 try { previous = JSON.parse(await readFile(snapshotPath, 'utf8')); } catch (error) { if (error.code !== 'ENOENT') throw new Error('Existing monitor snapshot is unreadable'); }
-const observation = await runChecks({ apiBase });
+const observation = await runChecks({ apiBase, serviceProbeUrl: process.env.STATUS_SERVICE_PROBE_URL, serviceProbeToken: process.env.STATUS_SERVICE_PROBE_TOKEN });
 const snapshot = recordObservation(previous, observation);
 await mkdir(fileURLToPath(new URL('../public/', import.meta.url)), { recursive: true });
 await writeFile(snapshotPath + '.tmp', JSON.stringify(snapshot, null, 2) + '\n', { mode: 0o644 });
