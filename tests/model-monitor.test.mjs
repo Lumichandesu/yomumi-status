@@ -468,7 +468,7 @@ test('primary and fallback builds enforce scoped CSP and publish only their inte
     await cp(join(sourceRoot, 'scripts/build.mjs'), join(fixtureRoot, 'scripts/build.mjs'));
     for (const name of ['index.html', 'status.css', 'status-client.mjs', 'status-model.mjs']) await cp(join(sourceRoot, 'public', name), join(fixtureRoot, 'public', name));
     await writeFile(join(fixtureRoot, 'public/status.json'), JSON.stringify(recordObservation(null, observe())));
-    const runBuild = (fallback = '') => promisify(execFile)(process.execPath, [join(fixtureRoot, 'scripts/build.mjs')], { env: { ...process.env, STATUS_DATA_URL: fallback }, timeout: 5000 });
+    const runBuild = (fallback = '') => promisify(execFile)(process.env.BUN_BIN || 'bun', ['--no-env-file', 'run', join(fixtureRoot, 'scripts/build.mjs')], { env: { ...process.env, STATUS_DATA_URL: fallback }, timeout: 10000 });
     await runBuild();
     const primary = await readFile(join(fixtureRoot, 'dist/index.html'), 'utf8');
     assert.match(primary, /http-equiv="Content-Security-Policy"/);

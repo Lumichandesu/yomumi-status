@@ -28,7 +28,11 @@ jobs:
           ref: main
           # Only this job persists GITHUB_TOKEN, for its one-file commit.
           persist-credentials: true
-      - name: Verify fixture-only monitor and history contracts
+      - name: Install pinned Bun for fixture build checks
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: '1.4.2'
+      - name: Verify fixture-only monitor, client and build contracts
         run: node --test tests/*.test.mjs
       - name: Record actual service observations
         env:
@@ -70,9 +74,16 @@ jobs:
         with:
           ref: main
           persist-credentials: false
-      - name: Verify fixture-only monitor and history contracts on source changes
+      - name: Install pinned Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: '1.4.2'
+      - name: Install locked server dependencies for source verification
         if: github.event_name == 'push'
-        run: node --test tests/*.test.mjs
+        run: bun --no-env-file install --frozen-lockfile --ignore-scripts
+      - name: Verify fixture-only monitor, client, build and Elysia contracts on source changes
+        if: github.event_name == 'push'
+        run: bun --no-env-file run test
       - name: Enable HTTPS when the custom certificate is ready
         env:
           GH_TOKEN: ${{ github.token }}
@@ -86,7 +97,7 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
       - name: Build independent static assets
-        run: node scripts/build.mjs
+        run: bun --no-env-file run build
       - name: Upload small Pages artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:

@@ -34,10 +34,18 @@ jobs:
           persist-credentials: false
       - name: Configure Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+      - name: Install pinned Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: '1.4.2'
+      - name: Install locked server dependencies for source verification
+        run: bun --no-env-file install --frozen-lockfile --ignore-scripts
+      - name: Verify fixture-only monitor, client, build and Elysia contracts
+        run: bun --no-env-file run test
       - name: Build fallback with independently hosted observations
         env:
           STATUS_DATA_URL: https://raw.githubusercontent.com/Lumichandesu/yomumi-status/main/public/status.json
-        run: node scripts/build.mjs
+        run: bun --no-env-file run build
       - name: Upload small Pages artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
