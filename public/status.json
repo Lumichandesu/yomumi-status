@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-01T21:59:10.469Z",
+  "generatedAt": "2026-10-02T01:36:05.669Z",
   "monitor": {
     "startedAt": "2026-09-30T08:11:27.183Z",
     "intervalSeconds": 900,
@@ -10,25 +10,25 @@
     {
       "id": "website",
       "status": "operational",
-      "latencyMs": 96,
+      "latencyMs": 196,
       "reason": "Service check passed; public access could not be tested by the external monitor.",
-      "checkedAt": "2026-10-01T21:59:10.221Z",
+      "checkedAt": "2026-10-02T01:36:05.543Z",
       "name": "Website"
     },
     {
       "id": "api",
       "status": "operational",
-      "latencyMs": 328,
+      "latencyMs": 306,
       "reason": "Service check passed; public access could not be tested by the external monitor.",
-      "checkedAt": "2026-10-01T21:59:10.453Z",
+      "checkedAt": "2026-10-02T01:36:05.653Z",
       "name": "Public API"
     },
     {
       "id": "database",
       "status": "operational",
-      "latencyMs": 4,
+      "latencyMs": 3,
       "reason": null,
-      "checkedAt": "2026-10-01T21:59:09.808Z",
+      "checkedAt": "2026-10-02T01:36:05.071Z",
       "name": "Database"
     },
     {
@@ -36,7 +36,7 @@
       "status": "operational",
       "latencyMs": 74,
       "reason": null,
-      "checkedAt": "2026-10-01T21:59:09.879Z",
+      "checkedAt": "2026-10-02T01:36:05.142Z",
       "name": "Cache"
     }
   ],
@@ -417,6 +417,35 @@
           "reason": null
         }
       ]
+    },
+    {
+      "checkedAt": "2026-10-02T01:36:05.669Z",
+      "components": [
+        {
+          "id": "website",
+          "status": "operational",
+          "latencyMs": 196,
+          "reason": "Service check passed; public access could not be tested by the external monitor."
+        },
+        {
+          "id": "api",
+          "status": "operational",
+          "latencyMs": 306,
+          "reason": "Service check passed; public access could not be tested by the external monitor."
+        },
+        {
+          "id": "database",
+          "status": "operational",
+          "latencyMs": 3,
+          "reason": null
+        },
+        {
+          "id": "cache",
+          "status": "operational",
+          "latencyMs": 74,
+          "reason": null
+        }
+      ]
     }
   ],
   "days": [
@@ -489,6 +518,43 @@
           "status": "operational",
           "checks": 4,
           "passed": 4,
+          "failed": 0,
+          "unknown": 0
+        }
+      ]
+    },
+    {
+      "date": "2026-10-02",
+      "components": [
+        {
+          "id": "website",
+          "status": "operational",
+          "checks": 1,
+          "passed": 1,
+          "failed": 0,
+          "unknown": 0
+        },
+        {
+          "id": "api",
+          "status": "operational",
+          "checks": 1,
+          "passed": 1,
+          "failed": 0,
+          "unknown": 0
+        },
+        {
+          "id": "database",
+          "status": "operational",
+          "checks": 1,
+          "passed": 1,
+          "failed": 0,
+          "unknown": 0
+        },
+        {
+          "id": "cache",
+          "status": "operational",
+          "checks": 1,
+          "passed": 1,
           "failed": 0,
           "unknown": 0
         }
