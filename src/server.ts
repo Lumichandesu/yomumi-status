@@ -9,7 +9,10 @@ import { validateSnapshot } from '../public/status-model.mjs';
 const defaultDirectory = fileURLToPath(new URL('../dist/', import.meta.url));
 const workerSnapshot = 'https://yomumi-status-monitor.yomumi.workers.dev/status.json';
 const fallbackSnapshot = 'https://raw.githubusercontent.com/Lumichandesu/yomumi-status/main/public/status.json';
-const policyFor = (fallback: boolean) => `default-src 'none'; style-src 'self'; script-src 'self'; connect-src 'self' ${workerSnapshot}${fallback ? ` ${fallbackSnapshot}` : ''}; base-uri 'none'; form-action 'none'; object-src 'none'; img-src 'none'`;
+const browserCompatSource = (await readFile(new URL('../public/browser-compat.js', import.meta.url), 'utf8')).replace(/\r\n?/g, '\n');
+const browserCompatHash = createHash('sha256').update(browserCompatSource).digest('base64');
+const policyFor = (fallback: boolean) => `default-src 'none'; style-src 'self'; script-src 'self' 'sha256-${browserCompatHash}'; connect-src 'self' ${workerSnapshot}${fallback ? ` ${fallbackSnapshot}` : ''}; base-uri 'none'; form-action 'none'; object-src 'none'; img-src 'none'`;
+const noticePolicy = "default-src 'none'; style-src 'unsafe-inline'; script-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'; frame-ancestors 'none'";
 const assetName = /^\.\/assets\/(index-[A-Za-z0-9_-]{8,64}\.(?:css|js))$/u;
 
 type Asset = {
@@ -65,6 +68,8 @@ export async function createStatusServer({ directory = defaultDirectory }: Statu
   }
   assets.set('/', html);
   assets.set('/index.html', html);
+  const notice = await load('unsupported/index.html', 'text/html; charset=utf-8', 'no-cache', 16_000);
+  for (const path of ['/unsupported', '/unsupported/', '/unsupported/index.html']) assets.set(path, notice);
   for (const name of new Set(declared)) {
     assets.set(`/assets/${name}`, await load(`assets/${name}`, name.endsWith('.css') ? 'text/css; charset=utf-8' : 'text/javascript; charset=utf-8', 'public, max-age=31536000, immutable', 256_000));
   }
@@ -104,6 +109,10 @@ export async function createStatusServer({ directory = defaultDirectory }: Statu
       return new Response(request.method === 'HEAD' ? null : 'Not found', { status: 404, headers });
     }
     headers.set('Content-Type', asset.contentType);
+    if (asset === notice) {
+      headers.set('Content-Security-Policy', noticePolicy);
+      headers.set('X-Robots-Tag', 'noindex, nofollow, noai, noimageai');
+    }
     headers.set('Cache-Control', asset.cacheControl);
     headers.set('ETag', asset.etag);
     if (ifNoneMatch(request.headers.get('If-None-Match'), asset.etag)) return new Response(null, { status: 304, headers });

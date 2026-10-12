@@ -1,4 +1,5 @@
-import { cp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { cp, mkdir, readFile, writeFile, rm } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve, relative, isAbsolute, join } from 'node:path';
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -37,6 +38,12 @@ for (const artifact of result.outputs) {
   if (!artifactRelative || artifactRelative.startsWith('..') || isAbsolute(artifactRelative)) throw new Error('Invalid status build artifact path');
 }
 let html = await htmlAsset.text();
+// Do not send this through the bundler: old engines must parse it before encountering
+// module scripts. A fixed CSP hash allows only these bytes, without unsafe-inline scripts
+// or an extra network request. Relative navigation also works on the GitHub fallback path.
+const browserCompat = (await readFile(join(serviceRoot, 'public', 'browser-compat.js'), 'utf8')).replace(/\r\n?/g, '\n');
+const browserCompatHash = createHash('sha256').update(browserCompat).digest('base64');
+const unsupported = await readFile(join(serviceRoot, 'public', 'unsupported', 'index.html'), 'utf8');
 // This exact fixed directory is the disposable status output, never the shared checkout.
 // Invalid configuration or a bundler failure leaves the previous build intact.
 await rm(resolvedOutput, { force: true, recursive: true });
@@ -54,11 +61,13 @@ if (fallback) {
   await writeFile(output + 'CNAME', 'status.yomumi.moe\n');
 }
 html = html.replace('<meta name="referrer"', '<meta name="robots" content="noai, noimageai"><meta name="referrer"');
-const policy = `default-src 'none'; style-src 'self'; script-src 'self'; connect-src 'self' https://yomumi-status-monitor.yomumi.workers.dev/status.json${fallback ? ' ' + fallbackUrl : ''}; base-uri 'none'; form-action 'none'; object-src 'none'; img-src 'none'`;
-html = html.replace('<head>', `<head>\n  <meta http-equiv="Content-Security-Policy" content="${policy}">`);
+const policy = `default-src 'none'; style-src 'self'; script-src 'self' 'sha256-${browserCompatHash}'; connect-src 'self' https://yomumi-status-monitor.yomumi.workers.dev/status.json${fallback ? ' ' + fallbackUrl : ''}; base-uri 'none'; form-action 'none'; object-src 'none'; img-src 'none'`;
+html = html.replace('<head>', `<head>\n  <meta http-equiv="Content-Security-Policy" content="${policy}"><script>${browserCompat}</script>`);
 // Remove indentation between tags, preserving text, attributes and readable names.
 html = html.replace(/>\s+</gu, '><').trim() + '\n';
 await writeFile(output + 'index.html', html);
+await mkdir(join(resolvedOutput, 'unsupported'), { recursive: true });
+await writeFile(join(resolvedOutput, 'unsupported', 'index.html'), unsupported);
 await writeFile(output + '.nojekyll', '');
 await writeFile(output + 'robots.txt', 'User-agent: *\nAllow: /\n\nUser-agent: GPTBot\nUser-agent: CCBot\nUser-agent: ClaudeBot\nUser-agent: Google-Extended\nDisallow: /\n');
 const browserBytes = result.outputs.filter((artifact) => artifact !== htmlAsset).reduce((bytes, artifact) => bytes + artifact.size, 0);

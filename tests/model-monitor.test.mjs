@@ -466,14 +466,16 @@ test('primary and fallback builds enforce scoped CSP and publish only their inte
     await mkdir(join(fixtureRoot, 'scripts'));
     await mkdir(join(fixtureRoot, 'public'));
     await cp(join(sourceRoot, 'scripts/build.mjs'), join(fixtureRoot, 'scripts/build.mjs'));
-    for (const name of ['index.html', 'status.css', 'status-client.mjs', 'status-model.mjs']) await cp(join(sourceRoot, 'public', name), join(fixtureRoot, 'public', name));
+    for (const name of ['index.html', 'status.css', 'status-client.mjs', 'status-model.mjs', 'browser-compat.js']) await cp(join(sourceRoot, 'public', name), join(fixtureRoot, 'public', name));
+    await cp(join(sourceRoot, 'public', 'unsupported'), join(fixtureRoot, 'public', 'unsupported'), { recursive: true });
     await writeFile(join(fixtureRoot, 'public/status.json'), JSON.stringify(recordObservation(null, observe())));
     const runBuild = (fallback = '') => promisify(execFile)(process.env.BUN_BIN || 'bun', ['--no-env-file', 'run', join(fixtureRoot, 'scripts/build.mjs')], { env: { ...process.env, STATUS_DATA_URL: fallback }, timeout: 10000 });
     await runBuild();
     const primary = await readFile(join(fixtureRoot, 'dist/index.html'), 'utf8');
     assert.match(primary, /http-equiv="Content-Security-Policy"/);
     const scheduledUrl = 'https://yomumi-status-monitor.yomumi.workers.dev/status.json';
-    assert.ok(primary.includes(`default-src 'none'; style-src 'self'; script-src 'self'; connect-src 'self' ${scheduledUrl}; base-uri 'none'; form-action 'none'; object-src 'none'; img-src 'none'`));
+    assert.match(primary, /default-src 'none'; style-src 'self'; script-src 'self' 'sha256-[A-Za-z0-9+/=]+';/u);
+    assert.ok(primary.includes(`connect-src 'self' ${scheduledUrl}; base-uri 'none'; form-action 'none'; object-src 'none'; img-src 'none'`));
     assert.match(primary, /name="status-data-url" content="\.\/status\.json"/);
     assert.equal(await readFile(join(fixtureRoot, 'dist/CNAME'), 'utf8'), 'status.yomumi.moe\n');
     assert.ok(validateSnapshot(JSON.parse(await readFile(join(fixtureRoot, 'dist/status.json'), 'utf8'))));

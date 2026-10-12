@@ -8,6 +8,7 @@
     <meta name="referrer" content="no-referrer">
     <meta name="status-data-url" content="./status.json">
     <title>Yomumi Status</title>
+    <!-- YOMUMI_BROWSER_COMPAT: build inserts a hashed classic ES3 guard before the module. -->
     <link rel="stylesheet" href="./status.css">
     <script type="module" src="./status-client.mjs"></script>
   </head>
@@ -69,7 +70,7 @@
           <div id="incident-list"><p class="empty-incidents">No incident data available yet.</p></div>
         </section>
 
-        <noscript><p class="noscript-note">JavaScript is needed to load the monitor snapshot. Status remains unknown until a current observation is available.</p></noscript>
+        <noscript><p class="noscript-note">JavaScript is off or unsupported. Enable it, or update your browser and operating system, to load the latest monitor observations. Status remains unknown until a current observation is available.</p><p class="noscript-note" lang="th">กรุณาเปิด JavaScript หรืออัปเดตเบราว์เซอร์และระบบปฏิบัติการ เพื่อดูข้อมูลสถานะล่าสุด ขณะนี้ยังไม่สามารถยืนยันสถานะบริการได้</p></noscript>
       </main>
     </div>
   </body>

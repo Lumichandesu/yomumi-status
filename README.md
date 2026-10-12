@@ -84,3 +84,9 @@ Independent hosting survives application/CDN/API failures, but GitHub Pages/Acti
 provider. The separate snapshot producer shares Cloudflare; its failure leaves the GitHub source
 available, or UNKNOWN when all observations are stale. The custom domain uses Cloudflare authoritative DNS; bookmark the github.io
 fallback for a DNS problem. No service can promise availability through every provider outage.
+
+## Older browsers
+
+The primary and fallback builds include a plain Thai/English `unsupported/` upgrade notice, readable without JavaScript. A small ES3 classic guard checks the browser APIs used by the renderer before the module runs. Its exact normalized bytes are allowed with a SHA-256 CSP hash; no unsafe-inline scripts, evaluation, extra JavaScript request or application dependency is introduced. The no-JS status page continues to show UNKNOWN rather than inventing availability.
+
+This handles browsers that can complete HTTPS but cannot run the status interface. TLS or certificate validation failure happens before HTML and cannot display a custom notice on the same endpoint. GitHub Pages enforces its own HTTPS transport and cannot run Bun or Elysia. Do not lower the application TLS/HSTS policy: a truly ancient-client notice needs a separate static-only host outside the parent domain HSTS scope, with an explicit owner decision and no login/payment/API/user data.

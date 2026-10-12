@@ -4,19 +4,24 @@ import { tmpdir } from 'node:os';
 import { isAbsolute, join, relative, resolve } from 'node:path';
 import { createStatusServer } from '../src/server';
 import { validateSnapshot } from '../public/status-model.mjs';
+import { createHash } from 'node:crypto';
 
 const worker = 'https://yomumi-status-monitor.yomumi.workers.dev/status.json';
 const fallback = 'https://raw.githubusercontent.com/Lumichandesu/yomumi-status/main/public/status.json';
 const css = '/assets/index-12345678.css';
 const js = '/assets/index-abcdefgh.js';
 const fixtures: string[] = [];
+const compatSource = (await readFile(new URL('../public/browser-compat.js', import.meta.url), 'utf8')).replace(/\r\n?/g, '\n');
+const compatHash = createHash('sha256').update(compatSource).digest('base64');
+const upgradeNotice = await readFile(new URL('../public/unsupported/index.html', import.meta.url), 'utf8');
 
 async function fixture(isFallback = false) {
   const directory = await mkdtemp(join(tmpdir(), 'yomumi-status-server-'));
   fixtures.push(directory);
   await mkdir(join(directory, 'assets'));
-  const policy = `default-src 'none'; style-src 'self'; script-src 'self'; connect-src 'self' ${worker}${isFallback ? ` ${fallback}` : ''}; base-uri 'none'; form-action 'none'; object-src 'none'; img-src 'none'`;
-  const html = `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="${policy}"><link rel="stylesheet" href=".${css}"><script type="module" src=".${js}"></script></head><body>สถานะที่ยังไม่ทราบ</body></html>`;
+  await mkdir(join(directory, 'unsupported'));
+  const policy = `default-src 'none'; style-src 'self'; script-src 'self' 'sha256-${compatHash}'; connect-src 'self' ${worker}${isFallback ? ` ${fallback}` : ''}; base-uri 'none'; form-action 'none'; object-src 'none'; img-src 'none'`;
+  const html = `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="${policy}"><script>${compatSource}</script><link rel="stylesheet" href=".${css}"><script type="module" src=".${js}"></script></head><body>สถานะที่ยังไม่ทราบ</body></html>`;
   // Explicitly unobserved test data: no invented healthy service or uptime.
   const snapshot = validateSnapshot({
     schemaVersion: 1, generatedAt: '2026-10-01T00:00:00.000Z',
@@ -32,6 +37,7 @@ async function fixture(isFallback = false) {
     writeFile(join(directory, 'status.json'), JSON.stringify(snapshot)),
     writeFile(join(directory, '.env'), 'PRIVATE_FIXTURE_SECRET=must-not-be-served'),
     writeFile(join(directory, 'assets/index-unlisted.js'), 'must-not-be-served'),
+    writeFile(join(directory, 'unsupported', 'index.html'), upgradeNotice),
   ]);
   return { directory, html, snapshot, policy };
 }
@@ -48,6 +54,26 @@ afterEach(async () => {
 const request = (path: string, init?: RequestInit) => new Request(`http://127.0.0.1:4331${path}`, init);
 
 describe('independent Bun + Elysia status server', () => {
+  test('upgrade notice is a static no-JS document isolated from APIs, cookies and monitor traffic', async () => {
+    const data = await fixture();
+    const app = await createStatusServer({ directory: data.directory });
+    const fetchSpy = spyOn(globalThis, 'fetch').mockRejectedValue(new Error('No network permitted'));
+    try {
+      for (const path of ['/unsupported', '/unsupported/', '/unsupported/index.html']) for (const method of ['GET', 'HEAD']) {
+        const response = await app.handle(request(path, { method, headers: { 'user-agent': 'MSIE 10.0', Origin: 'https://untrusted.invalid' } }));
+        expect(response.status).toBe(200);
+        expect(await response.text()).toBe(method === 'HEAD' ? '' : upgradeNotice);
+        expect(response.headers.get('Content-Security-Policy')).toContain("script-src 'none'");
+        expect(response.headers.get('X-Robots-Tag')).toContain('noindex');
+        expect(response.headers.get('Set-Cookie')).toBeNull();
+        expect(response.headers.get('Access-Control-Allow-Origin')).toBeNull();
+      }
+      expect((await app.handle(request('/unsupported/', { method: 'POST' }))).status).toBe(405);
+      expect((await app.handle(request('/api/auth/me'))).status).toBe(404);
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally { fetchSpy.mockRestore(); }
+  });
+
   test('GET and HEAD serve preloaded built bytes with correct UTF-8 size and no listening socket', async () => {
     const data = await fixture();
     const app = await createStatusServer({ directory: data.directory });

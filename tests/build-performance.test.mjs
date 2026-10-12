@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import { isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validateSnapshot } from '../public/status-model.mjs';
+import { createHash } from 'node:crypto';
 
 const sourceRoot = fileURLToPath(new URL('../', import.meta.url));
 const FALLBACK_URL = 'https://raw.githubusercontent.com/Lumichandesu/yomumi-status/main/public/status.json';
@@ -19,9 +20,10 @@ async function withBuildFixture(callback) {
     await mkdir(join(fixtureRoot, 'scripts'));
     await mkdir(join(fixtureRoot, 'public'));
     await cp(join(sourceRoot, 'scripts', 'build.mjs'), join(fixtureRoot, 'scripts', 'build.mjs'));
-    for (const name of ['index.html', 'status.css', 'status-client.mjs', 'status-model.mjs']) {
+    for (const name of ['index.html', 'status.css', 'status-client.mjs', 'status-model.mjs', 'browser-compat.js']) {
       await cp(join(sourceRoot, 'public', name), join(fixtureRoot, 'public', name));
     }
+    await cp(join(sourceRoot, 'public', 'unsupported'), join(fixtureRoot, 'public', 'unsupported'), { recursive: true });
     // Use fixture data in both repositories; the fallback deliberately has no hosted snapshot.
     await writeFile(join(fixtureRoot, 'public', 'status.json'), JSON.stringify(validateSnapshot({
       schemaVersion: 1, generatedAt: '2026-10-01T00:00:00.000Z',
@@ -63,14 +65,21 @@ test('Bun ships one smaller hashed client bundle and stylesheet without a model 
   await withBuildFixture(async ({ fixtureRoot, build }) => {
     await build();
     const generated = await generatedAssets(fixtureRoot);
-    assert.equal((generated.html.match(/<script\b/gu) ?? []).length, 1);
+    assert.equal((generated.html.match(/<script\b/gu) ?? []).length, 2);
     assert.equal((generated.html.match(/rel="stylesheet"/gu) ?? []).length, 1);
     assert.equal(generated.names.length, 2, 'No extra chunk or source map may enter the initial page');
     assert.doesNotMatch(generated.js, /import\s*\(|status-model\.mjs|sourceMappingURL/u);
-    assert.doesNotMatch(generated.html, /<style\b|<script[^>]*>[^<]+<\/script>|unsafe-inline|unsafe-eval/u);
+    assert.doesNotMatch(generated.html, /<style\b|unsafe-inline|unsafe-eval/u);
+    const guard = (await readFile(join(fixtureRoot, 'public', 'browser-compat.js'), 'utf8')).replace(/\r\n?/g, '\n');
+    const guardHash = createHash('sha256').update(guard).digest('base64');
+    assert.ok(generated.html.includes(`<script>${guard}</script>`), 'Classic guard bytes are never transpiled or minified');
+    assert.ok(generated.html.includes(`script-src 'self' 'sha256-${guardHash}';`));
+    assert.ok(generated.html.indexOf(`<script>${guard}`) < generated.html.indexOf('type="module"'), 'Guard runs before module scripts');
     assert.match(generated.html, /http-equiv="Content-Security-Policy"/u);
-    assert.match(generated.html, /script-src 'self';/u);
     assert.match(generated.html, /<noscript>/u);
+    const notice = await readFile(join(fixtureRoot, 'dist', 'unsupported', 'index.html'), 'utf8');
+    assert.match(notice, /Please update your browser/u);
+    assert.doesNotMatch(notice, /<(?:script|nav|iframe|img|audio|video|form|link)\b/iu);
     const originalFiles = await Promise.all(['status-client.mjs', 'status-model.mjs', 'status.css'].map((name) => readFile(join(fixtureRoot, 'public', name))));
     const originalBytes = originalFiles.reduce((bytes, contents) => bytes + contents.byteLength, 0);
     const generatedBytes = Buffer.byteLength(generated.js) + Buffer.byteLength(generated.css);
@@ -83,6 +92,12 @@ test('Bun ships one smaller hashed client bundle and stylesheet without a model 
     const repeated = await generatedAssets(fixtureRoot);
     assert.equal(repeated.jsName, generated.jsName, 'Unchanged bundles retain their cacheable content hash');
     assert.equal(repeated.cssName, generated.cssName);
+    // Windows checkouts may use CRLF; the HTML parser normalizes these newlines.
+    await writeFile(join(fixtureRoot, 'public', 'browser-compat.js'), guard.replace(/\n/g, '\r\n'));
+    await build();
+    const windowsBuild = await generatedAssets(fixtureRoot);
+    assert.ok(windowsBuild.html.includes(`<script>${guard}</script>`));
+    assert.ok(windowsBuild.html.includes(`script-src 'self' 'sha256-${guardHash}';`));
   });
 });
 
@@ -94,6 +109,7 @@ test('fallback keeps hashed bundles independent and rejects arbitrary data URLs 
     const fallback = await generatedAssets(fixtureRoot);
     assert.equal(fallback.jsName, primary.jsName);
     assert.equal(fallback.cssName, primary.cssName);
+    assert.match(await readFile(join(fixtureRoot, 'dist', 'unsupported', 'index.html'), 'utf8'), /This page cannot verify/u);
     assert.ok(fallback.html.includes(`name="status-data-url" content="${FALLBACK_URL}"`));
     assert.ok(fallback.html.includes(`https://yomumi-status-monitor.yomumi.workers.dev/status.json ${FALLBACK_URL};`));
     await assert.rejects(readFile(join(fixtureRoot, 'dist', 'CNAME')), { code: 'ENOENT' });
