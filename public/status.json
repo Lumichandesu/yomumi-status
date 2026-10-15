@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-15T04:26:04.612Z",
+  "generatedAt": "2026-10-15T09:22:14.605Z",
   "monitor": {
     "startedAt": "2026-09-30T08:11:27.183Z",
     "intervalSeconds": 900,
@@ -10,33 +10,33 @@
     {
       "id": "website",
       "status": "operational",
-      "latencyMs": 68,
+      "latencyMs": 55,
       "reason": "Service check passed; public access could not be tested by the external monitor.",
-      "checkedAt": "2026-10-15T04:26:04.277Z",
+      "checkedAt": "2026-10-15T09:22:14.388Z",
       "name": "Website"
     },
     {
       "id": "api",
       "status": "operational",
-      "latencyMs": 388,
+      "latencyMs": 257,
       "reason": "Service check passed; public access could not be tested by the external monitor.",
-      "checkedAt": "2026-10-15T04:26:04.597Z",
+      "checkedAt": "2026-10-15T09:22:14.590Z",
       "name": "Public API"
     },
     {
       "id": "database",
       "status": "operational",
-      "latencyMs": 4,
+      "latencyMs": 5,
       "reason": null,
-      "checkedAt": "2026-10-15T04:26:03.957Z",
+      "checkedAt": "2026-10-15T09:22:14.081Z",
       "name": "Database"
     },
     {
       "id": "cache",
       "status": "operational",
-      "latencyMs": 74,
+      "latencyMs": 75,
       "reason": null,
-      "checkedAt": "2026-10-15T04:26:04.027Z",
+      "checkedAt": "2026-10-15T09:22:14.152Z",
       "name": "Cache"
     }
   ],
@@ -327,6 +327,35 @@
           "id": "cache",
           "status": "operational",
           "latencyMs": 74,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "checkedAt": "2026-10-15T09:22:14.605Z",
+      "components": [
+        {
+          "id": "website",
+          "status": "operational",
+          "latencyMs": 55,
+          "reason": "Service check passed; public access could not be tested by the external monitor."
+        },
+        {
+          "id": "api",
+          "status": "operational",
+          "latencyMs": 257,
+          "reason": "Service check passed; public access could not be tested by the external monitor."
+        },
+        {
+          "id": "database",
+          "status": "operational",
+          "latencyMs": 5,
+          "reason": null
+        },
+        {
+          "id": "cache",
+          "status": "operational",
+          "latencyMs": 75,
           "reason": null
         }
       ]
@@ -894,32 +923,32 @@
         {
           "id": "website",
           "status": "operational",
-          "checks": 1,
-          "passed": 1,
+          "checks": 2,
+          "passed": 2,
           "failed": 0,
           "unknown": 0
         },
         {
           "id": "api",
           "status": "operational",
-          "checks": 1,
-          "passed": 1,
+          "checks": 2,
+          "passed": 2,
           "failed": 0,
           "unknown": 0
         },
         {
           "id": "database",
           "status": "operational",
-          "checks": 1,
-          "passed": 1,
+          "checks": 2,
+          "passed": 2,
           "failed": 0,
           "unknown": 0
         },
         {
           "id": "cache",
           "status": "operational",
-          "checks": 1,
-          "passed": 1,
+          "checks": 2,
+          "passed": 2,
           "failed": 0,
           "unknown": 0
         }
