@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-18T23:46:25.020Z",
+  "generatedAt": "2026-10-19T01:51:18.166Z",
   "monitor": {
     "startedAt": "2026-09-30T08:11:27.183Z",
     "intervalSeconds": 900,
@@ -10,66 +10,37 @@
     {
       "id": "website",
       "status": "operational",
-      "latencyMs": 231,
+      "latencyMs": 102,
       "reason": "Service check passed; public access could not be tested by the external monitor.",
-      "checkedAt": "2026-10-18T23:46:24.913Z",
+      "checkedAt": "2026-10-19T01:51:17.973Z",
       "name": "Website"
     },
     {
       "id": "api",
       "status": "operational",
-      "latencyMs": 323,
+      "latencyMs": 276,
       "reason": "Service check passed; public access could not be tested by the external monitor.",
-      "checkedAt": "2026-10-18T23:46:25.005Z",
+      "checkedAt": "2026-10-19T01:51:18.147Z",
       "name": "Public API"
     },
     {
       "id": "database",
       "status": "operational",
-      "latencyMs": 53,
+      "latencyMs": 4,
       "reason": null,
-      "checkedAt": "2026-10-18T23:46:23.964Z",
+      "checkedAt": "2026-10-19T01:51:17.607Z",
       "name": "Database"
     },
     {
       "id": "cache",
       "status": "operational",
-      "latencyMs": 576,
+      "latencyMs": 74,
       "reason": null,
-      "checkedAt": "2026-10-18T23:46:24.487Z",
+      "checkedAt": "2026-10-19T01:51:17.677Z",
       "name": "Cache"
     }
   ],
   "history": [
-    {
-      "checkedAt": "2026-10-17T01:29:43.810Z",
-      "components": [
-        {
-          "id": "website",
-          "status": "operational",
-          "latencyMs": 218,
-          "reason": "Service check passed; public access could not be tested by the external monitor."
-        },
-        {
-          "id": "api",
-          "status": "operational",
-          "latencyMs": 281,
-          "reason": "Service check passed; public access could not be tested by the external monitor."
-        },
-        {
-          "id": "database",
-          "status": "operational",
-          "latencyMs": 4,
-          "reason": null
-        },
-        {
-          "id": "cache",
-          "status": "operational",
-          "latencyMs": 74,
-          "reason": null
-        }
-      ]
-    },
     {
       "checkedAt": "2026-10-17T06:05:39.315Z",
       "components": [
@@ -501,6 +472,35 @@
           "id": "cache",
           "status": "operational",
           "latencyMs": 576,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "checkedAt": "2026-10-19T01:51:18.166Z",
+      "components": [
+        {
+          "id": "website",
+          "status": "operational",
+          "latencyMs": 102,
+          "reason": "Service check passed; public access could not be tested by the external monitor."
+        },
+        {
+          "id": "api",
+          "status": "operational",
+          "latencyMs": 276,
+          "reason": "Service check passed; public access could not be tested by the external monitor."
+        },
+        {
+          "id": "database",
+          "status": "operational",
+          "latencyMs": 4,
+          "reason": null
+        },
+        {
+          "id": "cache",
+          "status": "operational",
+          "latencyMs": 74,
           "reason": null
         }
       ]
@@ -1205,6 +1205,43 @@
           "status": "operational",
           "checks": 8,
           "passed": 8,
+          "failed": 0,
+          "unknown": 0
+        }
+      ]
+    },
+    {
+      "date": "2026-10-19",
+      "components": [
+        {
+          "id": "website",
+          "status": "operational",
+          "checks": 1,
+          "passed": 1,
+          "failed": 0,
+          "unknown": 0
+        },
+        {
+          "id": "api",
+          "status": "operational",
+          "checks": 1,
+          "passed": 1,
+          "failed": 0,
+          "unknown": 0
+        },
+        {
+          "id": "database",
+          "status": "operational",
+          "checks": 1,
+          "passed": 1,
+          "failed": 0,
+          "unknown": 0
+        },
+        {
+          "id": "cache",
+          "status": "operational",
+          "checks": 1,
+          "passed": 1,
           "failed": 0,
           "unknown": 0
         }
