@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-21T14:42:28.313Z",
+  "generatedAt": "2026-10-21T18:59:16.378Z",
   "monitor": {
     "startedAt": "2026-09-30T08:11:27.183Z",
     "intervalSeconds": 900,
@@ -10,17 +10,17 @@
     {
       "id": "website",
       "status": "operational",
-      "latencyMs": 141,
+      "latencyMs": 144,
       "reason": "Service check passed; public access could not be tested by the external monitor.",
-      "checkedAt": "2026-10-21T14:42:27.947Z",
+      "checkedAt": "2026-10-21T18:59:16.097Z",
       "name": "Website"
     },
     {
       "id": "api",
       "status": "operational",
-      "latencyMs": 465,
+      "latencyMs": 402,
       "reason": "Service check passed; public access could not be tested by the external monitor.",
-      "checkedAt": "2026-10-21T14:42:28.271Z",
+      "checkedAt": "2026-10-21T18:59:16.355Z",
       "name": "Public API"
     },
     {
@@ -28,15 +28,15 @@
       "status": "operational",
       "latencyMs": 39,
       "reason": null,
-      "checkedAt": "2026-10-21T14:42:27.477Z",
+      "checkedAt": "2026-10-21T18:59:15.620Z",
       "name": "Database"
     },
     {
       "id": "cache",
       "status": "operational",
-      "latencyMs": 72,
+      "latencyMs": 73,
       "reason": null,
-      "checkedAt": "2026-10-21T14:42:27.510Z",
+      "checkedAt": "2026-10-21T18:59:15.655Z",
       "name": "Cache"
     }
   ],
@@ -356,6 +356,35 @@
           "id": "cache",
           "status": "operational",
           "latencyMs": 72,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "checkedAt": "2026-10-21T18:59:16.378Z",
+      "components": [
+        {
+          "id": "website",
+          "status": "operational",
+          "latencyMs": 144,
+          "reason": "Service check passed; public access could not be tested by the external monitor."
+        },
+        {
+          "id": "api",
+          "status": "operational",
+          "latencyMs": 402,
+          "reason": "Service check passed; public access could not be tested by the external monitor."
+        },
+        {
+          "id": "database",
+          "status": "operational",
+          "latencyMs": 39,
+          "reason": null
+        },
+        {
+          "id": "cache",
+          "status": "operational",
+          "latencyMs": 73,
           "reason": null
         }
       ]
@@ -1145,32 +1174,32 @@
         {
           "id": "website",
           "status": "operational",
-          "checks": 4,
-          "passed": 4,
+          "checks": 5,
+          "passed": 5,
           "failed": 0,
           "unknown": 0
         },
         {
           "id": "api",
           "status": "operational",
-          "checks": 4,
-          "passed": 4,
+          "checks": 5,
+          "passed": 5,
           "failed": 0,
           "unknown": 0
         },
         {
           "id": "database",
           "status": "operational",
-          "checks": 4,
-          "passed": 4,
+          "checks": 5,
+          "passed": 5,
           "failed": 0,
           "unknown": 0
         },
         {
           "id": "cache",
           "status": "operational",
-          "checks": 4,
-          "passed": 4,
+          "checks": 5,
+          "passed": 5,
           "failed": 0,
           "unknown": 0
         }
