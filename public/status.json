@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-08T19:03:23.963Z",
+  "generatedAt": "2026-11-08T22:48:47.787Z",
   "monitor": {
     "startedAt": "2026-09-30T08:11:27.183Z",
     "intervalSeconds": 900,
@@ -10,66 +10,37 @@
     {
       "id": "website",
       "status": "unknown",
-      "latencyMs": 615,
+      "latencyMs": 525,
       "reason": "The monitor was blocked or rate limited; availability could not be verified.",
-      "checkedAt": "2026-11-08T19:03:23.487Z",
+      "checkedAt": "2026-11-08T22:48:47.346Z",
       "name": "Website"
     },
     {
       "id": "api",
       "status": "operational",
-      "latencyMs": 369,
+      "latencyMs": 355,
       "reason": "Service check passed; public access could not be tested by the external monitor.",
-      "checkedAt": "2026-11-08T19:03:23.952Z",
+      "checkedAt": "2026-11-08T22:48:47.775Z",
       "name": "Public API"
     },
     {
       "id": "database",
       "status": "operational",
-      "latencyMs": 49,
+      "latencyMs": 4,
       "reason": null,
-      "checkedAt": "2026-11-08T19:03:23.331Z",
+      "checkedAt": "2026-11-08T22:48:47.145Z",
       "name": "Database"
     },
     {
       "id": "cache",
       "status": "operational",
-      "latencyMs": 67,
+      "latencyMs": 70,
       "reason": null,
-      "checkedAt": "2026-11-08T19:03:23.348Z",
+      "checkedAt": "2026-11-08T22:48:47.212Z",
       "name": "Cache"
     }
   ],
   "history": [
-    {
-      "checkedAt": "2026-11-06T20:49:30.382Z",
-      "components": [
-        {
-          "id": "website",
-          "status": "unknown",
-          "latencyMs": 675,
-          "reason": "The monitor was blocked or rate limited; availability could not be verified."
-        },
-        {
-          "id": "api",
-          "status": "operational",
-          "latencyMs": 511,
-          "reason": "Service check passed; public access could not be tested by the external monitor."
-        },
-        {
-          "id": "database",
-          "status": "operational",
-          "latencyMs": 4,
-          "reason": null
-        },
-        {
-          "id": "cache",
-          "status": "operational",
-          "latencyMs": 72,
-          "reason": null
-        }
-      ]
-    },
     {
       "checkedAt": "2026-11-07T00:25:57.241Z",
       "components": [
@@ -327,6 +298,35 @@
           "id": "cache",
           "status": "operational",
           "latencyMs": 67,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "checkedAt": "2026-11-08T22:48:47.787Z",
+      "components": [
+        {
+          "id": "website",
+          "status": "unknown",
+          "latencyMs": 525,
+          "reason": "The monitor was blocked or rate limited; availability could not be verified."
+        },
+        {
+          "id": "api",
+          "status": "operational",
+          "latencyMs": 355,
+          "reason": "Service check passed; public access could not be tested by the external monitor."
+        },
+        {
+          "id": "database",
+          "status": "operational",
+          "latencyMs": 4,
+          "reason": null
+        },
+        {
+          "id": "cache",
+          "status": "operational",
+          "latencyMs": 70,
           "reason": null
         }
       ]
@@ -1782,32 +1782,32 @@
         {
           "id": "website",
           "status": "unknown",
-          "checks": 4,
+          "checks": 5,
           "passed": 0,
           "failed": 0,
-          "unknown": 4
+          "unknown": 5
         },
         {
           "id": "api",
           "status": "operational",
-          "checks": 4,
-          "passed": 4,
+          "checks": 5,
+          "passed": 5,
           "failed": 0,
           "unknown": 0
         },
         {
           "id": "database",
           "status": "operational",
-          "checks": 4,
-          "passed": 4,
+          "checks": 5,
+          "passed": 5,
           "failed": 0,
           "unknown": 0
         },
         {
           "id": "cache",
           "status": "operational",
-          "checks": 4,
-          "passed": 4,
+          "checks": 5,
+          "passed": 5,
           "failed": 0,
           "unknown": 0
         }
