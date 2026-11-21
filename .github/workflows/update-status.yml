@@ -15,8 +15,31 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  monitor:
+  visitor:
     if: github.ref == 'refs/heads/main' && github.event_name != 'push'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    permissions:
+      contents: read
+    outputs:
+      observation: ${{ steps.visit.outputs.observation }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+        with:
+          bun-version: '1.4.2'
+      - run: bun --no-env-file install --frozen-lockfile --ignore-scripts
+      - name: Visit the public homepage in a clean Chrome profile
+        id: visit
+        env:
+          RUNNER_ENVIRONMENT: ${{ runner.environment }}
+        run: xvfb-run -a node scripts/visitor-check.mjs
+  monitor:
+    needs: visitor
+    if: always() && !cancelled() && github.ref == 'refs/heads/main' && github.event_name != 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -35,21 +58,31 @@ jobs:
       - name: Verify fixture-only monitor, client and build contracts
         run: node --test tests/*.test.mjs
       - name: Record actual service observations
+        id: systems
+        continue-on-error: true
         env:
           STATUS_API_BASE_URL: ${{ secrets.STATUS_API_BASE_URL }}
           STATUS_SERVICE_PROBE_URL: ${{ secrets.STATUS_SERVICE_PROBE_URL }}
           STATUS_SERVICE_PROBE_TOKEN: ${{ secrets.STATUS_SERVICE_PROBE_TOKEN }}
         run: node scripts/monitor.mjs
-      - name: Commit only the validated public snapshot
+      - name: Persist the external browser's independently timed observation
+        env:
+          GUEST_OBSERVATION: ${{ needs.visitor.outputs.observation }}
+        run: node scripts/persist-visitor.mjs
+      - name: Commit only validated public observations
         shell: bash
+        env:
+          SYSTEM_CHECK: ${{ steps.systems.outcome }}
+          VISITOR_OBSERVED: ${{ needs.visitor.outputs.observation != '' }}
         run: |
           set -euo pipefail
-          git add -- public/status.json
-          if git diff --cached --quiet -- public/status.json; then exit 0; fi
+          if [[ "$SYSTEM_CHECK" != success && "$VISITOR_OBSERVED" != true ]]; then exit 1; fi
+          git add -- public/status.json public/visitor.json
+          if git diff --cached --quiet -- public/status.json public/visitor.json; then exit 0; fi
           git diff --cached --check -- public/status.json
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'chore(status): record observed service checks' --only -- public/status.json
+          git commit -m 'chore(status): record observed service checks' --only -- public/status.json public/visitor.json
           # GITHUB_TOKEN pushes do not recursively trigger the push workflow.
           # A concurrent remote update rejects this push; never overwrite or force-push it.
           git push origin HEAD:main
