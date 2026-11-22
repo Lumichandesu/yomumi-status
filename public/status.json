@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-22T08:10:40.069Z",
+  "generatedAt": "2026-11-22T16:25:54.378Z",
   "monitor": {
     "startedAt": "2026-09-30T08:11:27.183Z",
     "intervalSeconds": 900,
@@ -10,66 +10,37 @@
     {
       "id": "website",
       "status": "operational",
-      "latencyMs": 62,
+      "latencyMs": 59,
       "reason": "Internal website check passed.",
-      "checkedAt": "2026-11-22T08:10:38.743Z",
+      "checkedAt": "2026-11-22T16:25:54.077Z",
       "name": "Website"
     },
     {
       "id": "api",
       "status": "operational",
-      "latencyMs": 541,
+      "latencyMs": 310,
       "reason": "Service check passed; public access could not be tested by the external monitor.",
-      "checkedAt": "2026-11-22T08:10:39.222Z",
+      "checkedAt": "2026-11-22T16:25:54.328Z",
       "name": "Public API"
     },
     {
       "id": "database",
       "status": "operational",
-      "latencyMs": 1105,
+      "latencyMs": 45,
       "reason": null,
-      "checkedAt": "2026-11-22T08:10:39.958Z",
+      "checkedAt": "2026-11-22T16:25:54.242Z",
       "name": "Database"
     },
     {
       "id": "cache",
       "status": "operational",
-      "latencyMs": 71,
+      "latencyMs": 69,
       "reason": null,
-      "checkedAt": "2026-11-22T08:10:38.925Z",
+      "checkedAt": "2026-11-22T16:25:54.266Z",
       "name": "Cache"
     }
   ],
   "history": [
-    {
-      "checkedAt": "2026-11-20T10:36:14.513Z",
-      "components": [
-        {
-          "id": "website",
-          "status": "unknown",
-          "latencyMs": 417,
-          "reason": "The monitor was blocked or rate limited; availability could not be verified."
-        },
-        {
-          "id": "api",
-          "status": "operational",
-          "latencyMs": 397,
-          "reason": "Service check passed; public access could not be tested by the external monitor."
-        },
-        {
-          "id": "database",
-          "status": "operational",
-          "latencyMs": 91,
-          "reason": null
-        },
-        {
-          "id": "cache",
-          "status": "operational",
-          "latencyMs": 73,
-          "reason": null
-        }
-      ]
-    },
     {
       "checkedAt": "2026-11-20T18:47:57.356Z",
       "components": [
@@ -385,6 +356,35 @@
           "id": "cache",
           "status": "operational",
           "latencyMs": 71,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "checkedAt": "2026-11-22T16:25:54.378Z",
+      "components": [
+        {
+          "id": "website",
+          "status": "operational",
+          "latencyMs": 59,
+          "reason": "Internal website check passed."
+        },
+        {
+          "id": "api",
+          "status": "operational",
+          "latencyMs": 310,
+          "reason": "Service check passed; public access could not be tested by the external monitor."
+        },
+        {
+          "id": "database",
+          "status": "operational",
+          "latencyMs": 45,
+          "reason": null
+        },
+        {
+          "id": "cache",
+          "status": "operational",
+          "latencyMs": 69,
           "reason": null
         }
       ]
@@ -2358,32 +2358,32 @@
         {
           "id": "website",
           "status": "operational",
-          "checks": 2,
-          "passed": 2,
+          "checks": 3,
+          "passed": 3,
           "failed": 0,
           "unknown": 0
         },
         {
           "id": "api",
           "status": "operational",
-          "checks": 2,
-          "passed": 2,
+          "checks": 3,
+          "passed": 3,
           "failed": 0,
           "unknown": 0
         },
         {
           "id": "database",
           "status": "operational",
-          "checks": 2,
-          "passed": 2,
+          "checks": 3,
+          "passed": 3,
           "failed": 0,
           "unknown": 0
         },
         {
           "id": "cache",
           "status": "operational",
-          "checks": 2,
-          "passed": 2,
+          "checks": 3,
+          "passed": 3,
           "failed": 0,
           "unknown": 0
         }
