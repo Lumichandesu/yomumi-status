@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-23T22:44:58.684Z",
+  "generatedAt": "2026-11-24T06:31:03.196Z",
   "monitor": {
     "startedAt": "2026-09-30T08:11:27.183Z",
     "intervalSeconds": 900,
@@ -10,25 +10,25 @@
     {
       "id": "website",
       "status": "operational",
-      "latencyMs": 109,
+      "latencyMs": 172,
       "reason": "Internal website check passed.",
-      "checkedAt": "2026-11-23T22:44:58.436Z",
+      "checkedAt": "2026-11-24T06:31:02.859Z",
       "name": "Website"
     },
     {
       "id": "api",
       "status": "operational",
-      "latencyMs": 334,
+      "latencyMs": 476,
       "reason": "Service check passed; public access could not be tested by the external monitor.",
-      "checkedAt": "2026-11-23T22:44:58.661Z",
+      "checkedAt": "2026-11-24T06:31:03.163Z",
       "name": "Public API"
     },
     {
       "id": "database",
       "status": "operational",
-      "latencyMs": 5,
+      "latencyMs": 7,
       "reason": null,
-      "checkedAt": "2026-11-23T22:44:58.475Z",
+      "checkedAt": "2026-11-24T06:31:02.769Z",
       "name": "Database"
     },
     {
@@ -36,40 +36,11 @@
       "status": "operational",
       "latencyMs": 68,
       "reason": null,
-      "checkedAt": "2026-11-23T22:44:58.538Z",
+      "checkedAt": "2026-11-24T06:31:02.830Z",
       "name": "Cache"
     }
   ],
   "history": [
-    {
-      "checkedAt": "2026-11-22T01:12:32.528Z",
-      "components": [
-        {
-          "id": "website",
-          "status": "operational",
-          "latencyMs": 193,
-          "reason": "Internal website check passed."
-        },
-        {
-          "id": "api",
-          "status": "operational",
-          "latencyMs": 295,
-          "reason": "Service check passed; public access could not be tested by the external monitor."
-        },
-        {
-          "id": "database",
-          "status": "operational",
-          "latencyMs": 44,
-          "reason": null
-        },
-        {
-          "id": "cache",
-          "status": "operational",
-          "latencyMs": 72,
-          "reason": null
-        }
-      ]
-    },
     {
       "checkedAt": "2026-11-22T08:10:40.069Z",
       "components": [
@@ -234,6 +205,35 @@
           "id": "database",
           "status": "operational",
           "latencyMs": 5,
+          "reason": null
+        },
+        {
+          "id": "cache",
+          "status": "operational",
+          "latencyMs": 68,
+          "reason": null
+        }
+      ]
+    },
+    {
+      "checkedAt": "2026-11-24T06:31:03.196Z",
+      "components": [
+        {
+          "id": "website",
+          "status": "operational",
+          "latencyMs": 172,
+          "reason": "Internal website check passed."
+        },
+        {
+          "id": "api",
+          "status": "operational",
+          "latencyMs": 476,
+          "reason": "Service check passed; public access could not be tested by the external monitor."
+        },
+        {
+          "id": "database",
+          "status": "operational",
+          "latencyMs": 7,
           "reason": null
         },
         {
@@ -2276,6 +2276,43 @@
           "status": "operational",
           "checks": 3,
           "passed": 3,
+          "failed": 0,
+          "unknown": 0
+        }
+      ]
+    },
+    {
+      "date": "2026-11-24",
+      "components": [
+        {
+          "id": "website",
+          "status": "operational",
+          "checks": 1,
+          "passed": 1,
+          "failed": 0,
+          "unknown": 0
+        },
+        {
+          "id": "api",
+          "status": "operational",
+          "checks": 1,
+          "passed": 1,
+          "failed": 0,
+          "unknown": 0
+        },
+        {
+          "id": "database",
+          "status": "operational",
+          "checks": 1,
+          "passed": 1,
+          "failed": 0,
+          "unknown": 0
+        },
+        {
+          "id": "cache",
+          "status": "operational",
+          "checks": 1,
+          "passed": 1,
           "failed": 0,
           "unknown": 0
         }
